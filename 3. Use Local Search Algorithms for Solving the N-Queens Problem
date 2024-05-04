@@ -1,0 +1,59 @@
+import random
+
+class NQueensHillClimbing:
+    def __init__(self, N):
+        self.N = N
+        self.board = [random.randint(0, N-1) for _ in range(N)]  # Randomly initialize queens' positions
+
+    def num_attacking_queens(self):
+        num_attacks = 0
+        for i in range(self.N):
+            for j in range(i + 1, self.N):
+                # Check if two queens attack each other (same row or same diagonal)
+                if self.board[i] == self.board[j] or abs(i - j) == abs(self.board[i] - self.board[j]):
+                    num_attacks += 1
+        return num_attacks
+
+    def get_next_board(self):
+        min_attacks = self.num_attacking_queens()
+        next_board = list(self.board)
+        for i in range(self.N):
+            for j in range(self.N):
+                if j != self.board[i]:
+                    next_board[i] = j
+                    attacks = self.num_attacking_queens()
+                    if attacks < min_attacks:
+                        min_attacks = attacks
+                    else:
+                        next_board[i] = self.board[i]
+        return next_board
+
+    def solve(self):
+        iterations = 0
+        while True:
+            next_board = self.get_next_board()
+            if self.num_attacking_queens() == 0:
+                print("Solution found:")
+                self.print_solution()
+                break
+            elif next_board == self.board:
+                print("Local minimum reached:")
+                self.print_solution()
+                break
+            else:
+                self.board = next_board
+            iterations += 1
+            if iterations % 1000 == 0:
+                print("Iterations:", iterations)
+
+    def print_solution(self):
+        for i in range(self.N):
+            row = ['0'] * self.N
+            row[self.board[i]] = '1'
+            print(' '.join(row))
+
+
+if __name__ == "__main__":
+    N = 8  # Size of the chessboard
+    n_queens_hill_climbing = NQueensHillClimbing(N)
+    n_queens_hill_climbing.solve()
