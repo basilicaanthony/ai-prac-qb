@@ -1,0 +1,82 @@
+import numpy as np  # Import numpy for array manipulation
+import random  # Import random module for generating random solutions
+
+class GeneticAlgorithmTSP:
+    def __init__(self, num_cities, population_size=50, mutation_rate=0.01, generations=100):
+        self.num_cities = num_cities  # Number of cities in the TSP
+        self.population_size = population_size  # Size of the population
+        self.mutation_rate = mutation_rate  # Mutation rate for the genetic algorithm
+        self.generations = generations  # Number of generations for the genetic algorithm
+        self.distance_matrix = self.generate_random_distance_matrix()  # Generate random distance matrix for cities
+
+    # Generate random distance matrix for cities
+    def generate_random_distance_matrix(self):
+        return np.random.randint(1, 100, (self.num_cities, self.num_cities))
+
+    # Generate initial population of random permutations
+    def initial_population(self):
+        population = []
+        for _ in range(self.population_size):
+            population.append(np.random.permutation(self.num_cities))
+        return population
+
+    # Calculate fitness of a chromosome (route)
+    def calculate_fitness(self, chromosome):
+        total_distance = 0
+        for i in range(self.num_cities - 1):
+            total_distance += self.distance_matrix[chromosome[i]][chromosome[i+1]]
+        total_distance += self.distance_matrix[chromosome[-1]][chromosome[0]]  # Return to starting city
+        return 1 / total_distance
+
+    # Perform crossover operation to create offspring
+    def crossover(self, parent1, parent2):
+        crossover_point = random.randint(0, self.num_cities - 1)
+        child = list(parent1[:crossover_point])
+        remaining_cities = [city for city in parent2 if city not in child]
+        child.extend(remaining_cities)
+        return np.array(child)
+
+    # Perform mutation operation on a chromosome
+    def mutate(self, chromosome):
+        for swap in range(self.num_cities):
+            if random.random() < self.mutation_rate:
+                swap_with = random.randint(0, self.num_cities - 1)
+                chromosome[swap], chromosome[swap_with] = chromosome[swap_with], chromosome[swap]
+        return chromosome
+
+    # Evolve the population over generations
+    def evolve(self, population):
+        graded_population = [(self.calculate_fitness(chromosome), chromosome) for chromosome in population]
+        graded_population = sorted(graded_population, key=lambda x: x[0], reverse=True)
+
+        # Elitism: Select top performers to carry over to the next generation
+        elite = [x[1] for x in graded_population[:int(0.1 * self.population_size)]]
+
+        # Generate offspring for the next generation through crossover and mutation
+        children = []
+        while len(children) < (self.population_size - len(elite)):
+            parent1, parent2 = random.sample(population, 2)
+            child = self.crossover(parent1, parent2)
+            child = self.mutate(child)
+            children.append(child)
+
+        # Merge elite with children to form the next generation
+        next_generation = elite + children
+        return next_generation
+
+    # Run the genetic algorithm
+    def run(self):
+        population = self.initial_population()  # Generate initial population
+        for generation in range(self.generations):
+            population = self.evolve(population)  # Evolve population over generations
+            best_fitness = self.calculate_fitness(population[0])  # Calculate fitness of best individual
+            print(f"Generation {generation+1}:\nBest Fitness: {best_fitness}")
+            
+        best_route = population[0]  # Get best route
+        print("\nBest Route:", best_route)  # Print best route
+        print("Best Distance:", 1 / best_fitness)  # Print best distance
+
+if __name__ == "__main__":
+    num_cities = 10  # Number of cities in the TSP
+    ga_tsp = GeneticAlgorithmTSP(num_cities)  # Initialize the genetic algorithm
+    ga_tsp.run()  # Run the genetic algorithm
