@@ -1,0 +1,57 @@
+import heapq
+
+class EightPuzzle:
+    def __init__(self, initial_state):
+        self.initial_state = initial_state  # Initialize the initial state of the puzzle
+        self.goal_state = (1, 2, 3, 4, 5, 6, 7, 8, 0)  # Define the goal state
+        self.moves = []  # To store the sequence of moves
+
+    def uniform_cost_search(self):
+        priority_queue = [(0, self.initial_state, [])]  # Initialize priority queue with initial state and cost
+        visited = set()  # Set to store visited states
+        while priority_queue:
+            cost, state, moves = heapq.heappop(priority_queue)  # Pop the state with the lowest cost
+            if state == self.goal_state:  # If goal state is reached
+                self.moves = moves  # Store the sequence of moves
+                break  # Exit loop
+            if state not in visited:  # If state has not been visited
+                visited.add(state)  # Mark state as visited
+                for successor in self.successors(state):  # Iterate over successor states
+                    new_moves = moves + [successor]  # Update the sequence of moves
+                    heapq.heappush(priority_queue, (self.cost(new_moves), successor, new_moves))  # Push successor state to priority queue with its cost
+
+    def cost(self, moves):
+        # Calculate the cost of a sequence of moves (number of moves)
+        return len(moves)
+
+    def successors(self, state):
+        successors = []  # Initialize list to store successor states
+        blank_index = state.index(0)  # Get the index of the blank tile
+        for move in self.get_valid_moves(blank_index):  # Iterate over valid moves for the blank tile
+            successor = list(state)  # Create a copy of the current state
+            successor[blank_index], successor[move] = successor[move], successor[blank_index]  # Perform the move
+            successors.append(tuple(successor))  # Add the successor state to the list
+        return successors  # Return the list of successor states
+
+    def get_valid_moves(self, blank_index):
+        moves = []  # Initialize list to store valid moves
+        if blank_index - 3 >= 0:  # Check if moving up is a valid move
+            moves.append(blank_index - 3)  # Add the index of the tile above the blank tile
+        if blank_index + 3 < 9:  # Check if moving down is a valid move
+            moves.append(blank_index + 3)  # Add the index of the tile below the blank tile
+        if blank_index % 3 != 0:  # Check if moving left is a valid move
+            moves.append(blank_index - 1)  # Add the index of the tile to the left of the blank tile
+        if blank_index % 3 != 2:  # Check if moving right is a valid move
+            moves.append(blank_index + 1)  # Add the index of the tile to the right of the blank tile
+        return moves  # Return the list of valid moves
+
+    def print_moves(self):
+        for i in range(0, 9, 3):  # Iterate over rows
+            print(self.moves[i:i+3])  # Print each row of the sequence of moves
+
+if __name__ == "__main__":
+    initial_state = (1, 2, 3, 4, 0, 5, 6, 7, 8)  # Define the initial state of the puzzle
+    puzzle = EightPuzzle(initial_state)  # Create an instance of the EightPuzzle class
+    puzzle.uniform_cost_search()  # Solve the puzzle using Uniform Cost Search
+    print("Sequence of moves:")  
+    puzzle.print_moves()  # Print the sequence of moves to solve the puzzle
