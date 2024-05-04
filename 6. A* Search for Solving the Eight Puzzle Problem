@@ -1,0 +1,68 @@
+import heapq
+
+class EightPuzzle:
+    def __init__(self, initial_state):
+        self.initial_state = initial_state
+        self.goal_state = (1, 2, 3, 4, 5, 6, 7, 8, 0)  # Goal state
+        self.moves = []  # To store the sequence of moves
+
+    def manhattan_distance(self, state):
+        # Calculate Manhattan distance heuristic
+        distance = 0
+        for i in range(3):
+            for j in range(3):
+                tile = state[i * 3 + j]
+                if tile != 0:
+                    goal_row, goal_col = (tile - 1) // 3, (tile - 1) % 3
+                    distance += abs(i - goal_row) + abs(j - goal_col)
+        return distance
+
+    def successors(self, state):
+        # Generate successor states by moving the blank tile
+        successors = []
+        blank_index = state.index(0)
+        for move in self.get_valid_moves(blank_index):
+            successor = list(state)
+            successor[blank_index], successor[move] = successor[move], successor[blank_index]
+            successors.append(tuple(successor))
+        return successors
+
+    def get_valid_moves(self, blank_index):
+        # Get valid moves for the blank tile
+        moves = []
+        if blank_index - 3 >= 0:  # Move up
+            moves.append(blank_index - 3)
+        if blank_index + 3 < 9:  # Move down
+            moves.append(blank_index + 3)
+        if blank_index % 3 != 0:  # Move left
+            moves.append(blank_index - 1)
+        if blank_index % 3 != 2:  # Move right
+            moves.append(blank_index + 1)
+        return moves
+
+    def solve(self):
+        # A* search algorithm
+        priority_queue = [(self.manhattan_distance(self.initial_state), self.initial_state)]
+        visited = set()
+        while priority_queue:
+            _, state = heapq.heappop(priority_queue)
+            if state == self.goal_state:
+                break
+            visited.add(state)
+            for successor in self.successors(state):
+                if successor not in visited:
+                    priority = self.manhattan_distance(successor)
+                    heapq.heappush(priority_queue, (priority, successor))
+        self.moves = priority_queue[0][1]
+
+    def print_moves(self):
+        # Print the sequence of moves
+        for i in range(0, 9, 3):
+            print(self.moves[i:i+3])
+
+if __name__ == "__main__":
+    initial_state = (1, 2, 3, 4, 0, 5, 6, 7, 8)  # Initial state
+    puzzle = EightPuzzle(initial_state)
+    puzzle.solve()
+    print("Sequence of moves:")
+    puzzle.print_moves()
