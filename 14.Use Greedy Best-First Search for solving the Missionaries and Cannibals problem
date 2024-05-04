@@ -1,0 +1,57 @@
+import heapq
+
+class MissionariesAndCannibalsGBFS:
+    def __init__(self, initial_state):
+        self.initial_state = initial_state  # Initialize the initial state of the problem
+        self.goal_state = (0, 0, 0)  # Define the goal state where all missionaries and cannibals are on the opposite side
+        self.moves = []  # To store the sequence of moves
+
+    def heuristic(self, state):
+        # Heuristic function: estimate the number of missionaries and cannibals on the starting side
+        return state[0] + state[1]
+
+    def is_valid_state(self, state):
+        # Check if the state is valid (no more cannibals than missionaries on either side)
+        if state[0] < state[1] and state[0] != 0:
+            return False
+        if state[3] < state[4] and state[3] != 0:
+            return False
+        return True
+
+    def successors(self, state):
+        # Generate successor states by moving 1 or 2 missionaries and/or cannibals across the river
+        successors = []
+        for m in range(state[0] + 1):  # Iterate over possible numbers of missionaries to move
+            for c in range(state[1] + 1):  # Iterate over possible numbers of cannibals to move
+                if m + c > 0 and m + c <= 2:  # Check if the move is valid (at least 1 person and no more than 2)
+                    # Create the new state after moving m missionaries and c cannibals from the starting side to the other side
+                    new_state = (state[0] - m, state[1] - c, 1 - state[2], state[3] + m, state[4] + c, 1 - state[5])
+                    if self.is_valid_state(new_state):
+                        successors.append(new_state)  # Add the new state to the list of successors
+        return successors  # Return the list of successor states
+
+    def solve(self):
+        priority_queue = [(self.heuristic(self.initial_state), self.initial_state, [])]  # Initialize priority queue with initial state and heuristic value
+        visited = set()  # Set to store visited states
+        while priority_queue:
+            _, state, moves = heapq.heappop(priority_queue)  # Pop the state with the lowest heuristic value
+            if state == self.goal_state:  # If goal state is reached
+                self.moves = moves  # Store the sequence of moves
+                break  # Exit loop
+            if state not in visited:  # If state has not been visited
+                visited.add(state)  # Mark state as visited
+                for successor in self.successors(state):  # Iterate over successor states
+                    new_moves = moves + [successor]  # Update the sequence of moves
+                    heapq.heappush(priority_queue, (self.heuristic(successor), successor, new_moves))  # Push successor state to priority queue with its heuristic value
+
+    def print_moves(self):
+        # Print the sequence of moves to solve the problem
+        for move in self.moves:
+            print(move)
+
+if __name__ == "__main__":
+    initial_state = (3, 3, 1, 0, 0, 0)  # Starting state with 3 missionaries, 3 cannibals, and the boat on the starting side
+    puzzle = MissionariesAndCannibalsGBFS(initial_state)  # Create an instance of the MissionariesAndCannibalsGBFS class
+    puzzle.solve()  # Solve the problem using Greedy Best-First Search
+    print("Sequence of moves:")
+    puzzle.print_moves()  # Print the sequence of moves to solve the problem
