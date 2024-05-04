@@ -1,0 +1,33 @@
+class TowerOfHanoi:
+    def __init__(self, num_disks):
+        self.num_disks = num_disks  # Initialize the number of disks
+        self.moves = []  # Initialize an empty list to store the sequence of moves
+
+    def solve(self, source, auxiliary, target, num_disks):
+        # Base case: If only one disk is left, move it from the source peg to the target peg
+        if num_disks == 1:
+            self.moves.append((source, target))
+            return
+        
+        # Move num_disks - 1 disks from the source peg to the auxiliary peg using target as the auxiliary peg
+        self.solve(source, target, auxiliary, num_disks - 1)
+        
+        # Move the remaining disk from the source peg to the target peg
+        self.moves.append((source, target))
+        
+        # Move num_disks - 1 disks from the auxiliary peg to the target peg using source as the auxiliary peg
+        self.solve(auxiliary, source, target, num_disks - 1)
+
+    def get_moves(self):
+        # Initiate the solving process
+        self.solve('A', 'B', 'C', self.num_disks)
+        return self.moves
+
+
+if __name__ == "__main__":
+    num_disks = 3  # Number of disks
+    hanoi = TowerOfHanoi(num_disks)  # Create an instance of the TowerOfHanoi class
+    moves = hanoi.get_moves()  # Get the sequence of moves required to solve the Tower of Hanoi problem
+    print("Tower of Hanoi solution:")
+    for move in moves:
+        print(f"Move disk from {move[0]} to {move[1]}")  # Print each move in the sequence
