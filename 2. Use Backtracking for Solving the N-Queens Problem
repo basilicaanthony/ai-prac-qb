@@ -1,0 +1,57 @@
+class NQueens:
+    def __init__(self, N):
+        self.N = N  # Initialize the size of the chessboard
+        self.board = [[0] * N for _ in range(N)]  # Initialize the chessboard as an NxN grid with all values set to 0
+
+    # Check if placing a queen at position (row, col) is safe
+    def is_safe(self, row, col):
+        # Check if there's a queen in the same row
+        for i in range(col):
+            if self.board[row][i] == 1:
+                return False
+        
+        # Check upper diagonal on the left side
+        for i, j in zip(range(row, -1, -1), range(col, -1, -1)):
+            if self.board[i][j] == 1:
+                return False
+        
+        # Check lower diagonal on the left side
+        for i, j in zip(range(row, self.N, 1), range(col, -1, -1)):
+            if self.board[i][j] == 1:
+                return False
+        
+        return True
+
+    # Solve the N-Queens problem recursively using backtracking
+    def solve(self, col):
+        # Base case: If all queens are placed, return True
+        if col >= self.N:
+            return True
+        
+        # Try placing a queen in each row of the current column
+        for i in range(self.N):
+            if self.is_safe(i, col):  # Check if it's safe to place a queen at position (i, col)
+                self.board[i][col] = 1  # Place the queen at position (i, col)
+                if self.solve(col + 1):  # Recur to place the rest of the queens
+                    return True
+                self.board[i][col] = 0  # If placing the queen leads to failure, backtrack and remove it
+        
+        # If no solution found in this column, return False
+        return False
+
+    # Print the solution (positions of queens on the chessboard)
+    def print_solution(self):
+        for i in range(self.N):
+            for j in range(self.N):
+                print(self.board[i][j], end=" ")  # Print each cell value (queen or empty)
+            print()  # Move to the next row after printing each row
+
+
+if __name__ == "__main__":
+    N = 8  # Size of the chessboard
+    n_queens = NQueens(N)  # Create an instance of the NQueens class
+    if n_queens.solve(0):  # Try solving the N-Queens problem starting from column 0
+        print("Solution found:")  # Print if a solution is found
+        n_queens.print_solution()  # Print the solution (positions of queens)
+    else:
+        print("No solution exists for the given N.")  # Print if no solution exists
